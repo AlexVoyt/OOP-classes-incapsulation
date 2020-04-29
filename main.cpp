@@ -1,14 +1,10 @@
 #include <iostream>
 
-// инкапсуляция данных:
-// все паблик
-// гет/сет
-// протоколы
-//
-// инкапсуляция поведения:
-// позднее связывание : расширение и замена поведения
 
 // Класс хранит температуры в кельвинах, фаренгейтах и цельсиях
+//=======================================================//
+// All is public
+//=======================================================//
 class PubClass
 {
     public:
@@ -17,6 +13,8 @@ class PubClass
     float fahrenheit;
     float celsius;
 };
+//=======================================================//
+// Getter and setters
 //=======================================================//
 enum TemperatureType
 {
@@ -76,19 +74,21 @@ class GetSetClass
         switch(type)
         {
             case KELVIN:
-                SetKelvin(value);
+                Set_Kelvin(value);
                 break;
 
             case CELSIUS:
-                SetCelsius(value);
+                Set_Celsius(value);
                 break;
 
             case FAHRENHEIT:
-                SetFahrenheit(value);
+                Set_Fahrenheit(value);
                 break;
         }
     }
 };
+//======================================================//
+// Temperature comparasion
 //======================================================//
 class FancyProtocolClass : public GetSetClass
 {
@@ -96,15 +96,103 @@ class FancyProtocolClass : public GetSetClass
 
     public:
 
+    //TODO: how inlining works?
     int operator>(FancyProtocolClass &r)
     {
-        //With our invariant, it does not matter which temperature compare
         return (kelvin > r.Get_Kelvin() ? 1 : 0);
     }
+
+    inline int operator<(FancyProtocolClass &r)
+    {
+        return (kelvin < r.Get_Kelvin() ? 1 : 0);
+    }
+
 };
 //======================================================//
+// For simplicicty purpose many stuff in here are public and
+// there are no boundry checks, for example, for hp
+//
+// Abstraction + late binding
+// Weapon.Damage() - change behavior
+// Cleric::Do_damage() - added behavior (heal himself)
+//======================================================//
+class Soldier
+{
+    class Weapon
+    {
+        public:
+        virtual unsigned int Damage() = 0;
+    };
+
+    class Sword : public Weapon
+    {
+        unsigned int Damage()
+        {
+            return 7;
+        }
+    };
+
+    class Axe : public Weapon
+    {
+        unsigned int Damage()
+        {
+            return 10;
+        }
+    };
+
+    Weapon* weapon;
+
+    public:
+
+    unsigned int hp = 12;
+
+    void Do_Damage(Soldier* soldier)
+    {
+        soldier->hp -= weapon->Damage();
+    }
+
+    Soldier(int in_value)
+    {
+        if(in_value)
+        {
+            weapon = new Axe;
+        }
+        else
+        {
+            weapon = new Sword;
+        }
+    }
+};
+
+class Cleric : public Soldier
+{
+    public:
+
+    Cleric(int in_value) : Soldier(in_value){};
+
+    void Do_Damage(Soldier *soldier)
+    {
+        Soldier::Do_Damage(soldier);
+        hp++;
+    }
+};
+
 int main()
 {
-    printf("%d",sizeof(GetSetClass));
+#if 1
+    Soldier soldier_with_axe(1);
+    Soldier soldier_with_sword(0);
+    Cleric cleric_with_sword(0);
+    Soldier enemy(0);
+    soldier_with_axe.Do_Damage(&enemy);
+    printf("%d\n", enemy.hp);
+    enemy.hp = 12;
+    soldier_with_sword.Do_Damage(&enemy);
+    printf("%d\n", enemy.hp);
+    enemy.hp = 12;
+    cleric_with_sword.Do_Damage(&enemy);
+    printf("%d\n", enemy.hp);
+    printf("%d\n", cleric_with_sword.hp);
+#endif
     return 0;
 }
