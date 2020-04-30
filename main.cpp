@@ -177,6 +177,12 @@ class Cleric : public Soldier
     }
 };
 
+// Let's suppose that would be a TBS game
+void Make_Attack_Turn(Soldier *attacker, Soldier *defender)
+{
+    attacker->Do_Damage(defender);
+}
+
 int main()
 {
 #if 1
@@ -193,6 +199,10 @@ int main()
     cleric_with_sword.Do_Damage(&enemy);
     printf("%d\n", enemy.hp);
     printf("%d\n", cleric_with_sword.hp);
+    enemy.hp = 12;
+    Make_Attack_Turn(&cleric_with_sword, &enemy);
+    printf("%d\n", enemy.hp);
+
 #endif
     return 0;
 }
